@@ -1,8 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import SearchBar from '@/components/SearchBar'
 import ResultsTable from '@/components/ResultsTable'
-import { generateMockResults } from '@/constants/mockData'
-import { checkServiceability, isValidPincode } from '@/api/api'
+import { checkServiceability } from '@/api'
 
 const DEFAULT_FILTERS = {
   shipmentType: 'forward',
@@ -99,40 +98,15 @@ export default function Dashboard() {
     setLoading(true)
 
     try {
-      const data = await checkServiceability({
-        pickup_pincode: pickup,
-        destination_pincode: destination,
-        user_id: 'demo_user',
+      const rows = await checkServiceability({
+        pickupPincode: pickup,
+        destinationPincode: destination,
+        userId: 'demo_user',
       })
-
-      if (Array.isArray(data.table_rows) && data.table_rows.length > 0) {
-        setResults(data.table_rows)
-      } else if (Array.isArray(data.serviceable_couriers) && data.serviceable_couriers.length > 0) {
-        const zones = ['A', 'B', 'C', 'D', 'E']
-        const mappedRows = data.serviceable_couriers.map((courier, idx) => ({
-          id: idx,
-          courier: courier.name,
-          destination: `${destination} - ${courier.aggregator.toUpperCase()}`,
-          pickup: true,
-          reverse: courier.aggregator !== 'fship',
-          prepaid: true,
-          cod: courier.type !== 'air',
-          ndd: courier.type === 'air',
-          zone: zones[idx % zones.length],
-        }))
-        setResults(mappedRows)
-      } else {
-        setResults([])
-      }
+      setResults(rows)
     } catch (error) {
-      console.error('Serviceability API request failed, using fallback mock data:', error)
-      const fallbackRows = generateMockResults(
-        filters.shipmentType,
-        filters.expressType,
-        pickup,
-        destination,
-      )
-      setResults(fallbackRows)
+      console.error('Serviceability API request failed:', error)
+      setResults([])
     } finally {
       setLoading(false)
     }

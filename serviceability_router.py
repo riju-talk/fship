@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Any, Dict, List
 
 from fastapi import APIRouter, HTTPException, Query
@@ -12,23 +13,25 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def get_user_ratecards(user_id: str) -> List[Dict[str, str]]:
+def get_user_ratecards(user_id: str) -> List[Dict[str, Any]]:
     """
-    Mock database function.
-    Replace this with your real DB query.
+    Returns user courier configs.
+    TODO: replace with real DB lookup by user_id.
     """
     _ = user_id
     return [
         {
             "courier_name": "Fship Default",
             "aggregator": "fship",
-            "signature": "YOUR_FSHIP_KEY",
+            "signature": os.getenv("FSHIP_SIGNATURE", "YOUR_FSHIP_KEY"),
         },
         {
             "courier_name": "RapidShyp Default",
             "aggregator": "rapidshyp",
-            "api_key": "YOUR_RAPID_KEY",
-            "url": "https://api.rapidshyp.com/rapidshyp/apis/v1/serviceability_check",
+            "api_key": os.getenv("RAPIDSHYP_API_KEY", "YOUR_RAPID_KEY"),
+            "cod": True,
+            "order_value": 1000,
+            "weight": 1.0,
         },
     ]
 
@@ -40,19 +43,23 @@ def _zone_for_index(idx: int) -> str:
 
 @router.post("/api/check-serviceability")
 def check_serviceability_api(
-    pickup_pincode: str = Query(..., description="Pickup pincode or warehouse ID"),
-    destination_pincode: str = Query(..., description="Destination pincode"),
-    user_id: str = Query("demo_user", description="Logged in user ID"),
+    pickup_pincode: str = Query(..., min_length=6, max_length=6),
+    destination_pincode: str = Query(..., min_length=6, max_length=6),
+    user_id: str = Query("demo_user"),
+    cod: bool = Query(True),
+    order_value: float = Query(1000),
+    weight: float = Query(1.0),
 ) -> Dict[str, Any]:
     try:
         ratecards = get_user_ratecards(user_id)
         all_serviceable: List[Dict[str, Any]] = []
         table_rows: List[Dict[str, Any]] = []
 
-        aggregators: Dict[str, List[Dict[str, str]]] = {
+        aggregators: Dict[str, List[Dict[str, Any]]] = {
             "fship": [],
             "rapidshyp": [],
         }
+
         for rc in ratecards:
             agg = rc.get("aggregator", "")
             if agg in aggregators:
@@ -62,21 +69,24 @@ def check_serviceability_api(
             if not creds:
                 continue
 
+            active_creds = creds[0]
             if agg_name == "fship":
                 result = fship_common.check_serviceability(
                     pickup_pincode,
                     destination_pincode,
-                    signature=creds[0].get("signature", ""),
+                    signature=active_creds.get("signature", ""),
                 )
             elif agg_name == "rapidshyp":
                 result = rapidshyp_common.check_serviceability(
                     pickup_pincode,
                     destination_pincode,
-                    api_key=creds[0].get("api_key", ""),
-                    url=creds[0].get("url", ""),
+                    api_key=active_creds.get("api_key", ""),
+                    cod=cod,
+                    order_value=order_value,
+                    weight=weight,
                 )
             else:
-                result = {"couriers": []}
+                continue
 
             for courier in result.get("couriers", []):
                 if not courier.get("serviceable"):
@@ -101,10 +111,10 @@ def check_serviceability_api(
                         "courier": courier.get("name", "Unknown"),
                         "destination": f"{destination_pincode} - {agg_name.upper()}",
                         "pickup": True,
-                        "reverse": agg_name != "fship",
+                        "reverse": False,
                         "prepaid": True,
                         "cod": ctype != "air",
-                        "ndd": "1" in eta or ctype == "air",
+                        "ndd": "1" in str(eta) or ctype == "air",
                         "zone": _zone_for_index(row_idx),
                     }
                 )

@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
 from serviceability_router import router as serviceability_router
 
@@ -15,4 +14,3 @@ app.add_middleware(
 )
 
 app.include_router(serviceability_router, prefix="", tags=["Serviceability"])
-app.mount("/", StaticFiles(directory=".", html=True), name="static")
