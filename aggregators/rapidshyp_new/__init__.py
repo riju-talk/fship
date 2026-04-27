@@ -1,0 +1,1 @@
+# RapidShyp New aggregator module
