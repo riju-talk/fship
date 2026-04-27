@@ -27,7 +27,7 @@ async def get_serviceable_couriers(user_id: str, pickup_pincode: str, destinatio
     stmt = select(UserRateCard).where(UserRateCard.user_id==user_id, UserRateCard.is_active==True)
     cards = (await db.execute(stmt)).scalars().all()
     if not cards:
-        return {"serviceable_couriers": []}
+        return {"serviceable_couriers": [], "pickup_pincode": pickup_pincode, "destination_pincode": destination_pincode}
     
     # 4. Group by aggregator
     agg_groups = {}
@@ -35,7 +35,7 @@ async def get_serviceable_couriers(user_id: str, pickup_pincode: str, destinatio
         if c.aggregator in AGG_FUNCS:
             agg_groups.setdefault(c.aggregator, []).append(c)
     if not agg_groups:
-        return {"serviceable_couriers": []}
+        return {"serviceable_couriers": [], "pickup_pincode": pickup_pincode, "destination_pincode": destination_pincode}
     
     # 5. Call aggregators CONCURRENTLY (asyncio.gather = parallel)
     tasks = {agg: AGG_FUNCS[agg](pickup_pincode, destination_pincode, timeout=2.0, **opts) for agg in agg_groups}
