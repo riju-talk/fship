@@ -42,15 +42,11 @@ export async function checkServiceability(params: {
   })
 
   const response = await fetch(`/api/check-serviceability?${query.toString()}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    method: 'POST',
   })
 
   if (!response.ok) {
-    const payload = await response.json().catch(() => ({}))
-    throw new Error(payload.detail || `Serviceability API failed with ${response.status}`)
+    throw new Error(`Serviceability API failed with ${response.status}`)
   }
 
   const data = (await response.json()) as ServiceabilityResponse

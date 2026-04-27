@@ -41,100 +41,8 @@ def _zone_for_index(idx: int) -> str:
     return zones[idx % len(zones)]
 
 
-def _validate_pincode(value: str, field_name: str) -> None:
-    if not (value.isdigit() and len(value) == 6):
-        raise HTTPException(status_code=422, detail=f"{field_name} must be exactly 6 digits")
-
-
-def _build_response(
-    pickup_pincode: str,
-    destination_pincode: str,
-    user_id: str,
-    cod: bool,
-    order_value: float,
-    weight: float,
-) -> Dict[str, Any]:
-    _validate_pincode(pickup_pincode, "pickup_pincode")
-    _validate_pincode(destination_pincode, "destination_pincode")
-
-    ratecards = get_user_ratecards(user_id)
-    all_serviceable: List[Dict[str, Any]] = []
-    table_rows: List[Dict[str, Any]] = []
-
-    aggregators: Dict[str, List[Dict[str, Any]]] = {
-        "fship": [],
-        "rapidshyp": [],
-    }
-
-    for rc in ratecards:
-        agg = rc.get("aggregator", "")
-        if agg in aggregators:
-            aggregators[agg].append(rc)
-
-    for agg_name, creds in aggregators.items():
-        if not creds:
-            continue
-
-        active_creds = creds[0]
-        if agg_name == "fship":
-            result = fship_common.check_serviceability(
-                pickup_pincode,
-                destination_pincode,
-                signature=active_creds.get("signature", ""),
-            )
-        elif agg_name == "rapidshyp":
-            result = rapidshyp_common.check_serviceability(
-                pickup_pincode,
-                destination_pincode,
-                api_key=active_creds.get("api_key", ""),
-                cod=cod,
-                order_value=order_value,
-                weight=weight,
-            )
-        else:
-            continue
-
-        for courier in result.get("couriers", []):
-            if not courier.get("serviceable"):
-                continue
-
-            row_idx = len(table_rows)
-            eta = courier.get("eta", "N/A")
-            ctype = courier.get("type", "surface")
-
-            all_serviceable.append(
-                {
-                    "name": courier.get("name", "Unknown"),
-                    "aggregator": agg_name,
-                    "eta": eta,
-                    "type": ctype,
-                }
-            )
-
-            table_rows.append(
-                {
-                    "id": row_idx,
-                    "courier": courier.get("name", "Unknown"),
-                    "destination": f"{destination_pincode} - {agg_name.upper()}",
-                    "pickup": True,
-                    "reverse": False,
-                    "prepaid": True,
-                    "cod": ctype != "air",
-                    "ndd": "1" in str(eta) or ctype == "air",
-                    "zone": _zone_for_index(row_idx),
-                }
-            )
-
-    return {
-        "pickup_pincode": pickup_pincode,
-        "destination_pincode": destination_pincode,
-        "serviceable_couriers": all_serviceable,
-        "table_rows": table_rows,
-    }
-
-
-@router.get("/check-serviceability")
-def check_serviceability_get(
+@router.post("/api/check-serviceability")
+def check_serviceability_api(
     pickup_pincode: str = Query(..., min_length=6, max_length=6),
     destination_pincode: str = Query(..., min_length=6, max_length=6),
     user_id: str = Query("demo_user"),
@@ -143,16 +51,78 @@ def check_serviceability_get(
     weight: float = Query(1.0),
 ) -> Dict[str, Any]:
     try:
-        return _build_response(pickup_pincode, destination_pincode, user_id, cod, order_value, weight)
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.exception("Serviceability GET failed")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Internal server error while checking serviceability: {str(exc)}",
-        )
+        ratecards = get_user_ratecards(user_id)
+        all_serviceable: List[Dict[str, Any]] = []
+        table_rows: List[Dict[str, Any]] = []
 
+        aggregators: Dict[str, List[Dict[str, Any]]] = {
+            "fship": [],
+            "rapidshyp": [],
+        }
+
+        for rc in ratecards:
+            agg = rc.get("aggregator", "")
+            if agg in aggregators:
+                aggregators[agg].append(rc)
+
+        for agg_name, creds in aggregators.items():
+            if not creds:
+                continue
+
+            active_creds = creds[0]
+            if agg_name == "fship":
+                result = fship_common.check_serviceability(
+                    pickup_pincode,
+                    destination_pincode,
+                    signature=active_creds.get("signature", ""),
+                )
+            elif agg_name == "rapidshyp":
+                result = rapidshyp_common.check_serviceability(
+                    pickup_pincode,
+                    destination_pincode,
+                    api_key=active_creds.get("api_key", ""),
+                    cod=cod,
+                    order_value=order_value,
+                    weight=weight,
+                )
+            else:
+                continue
+
+            for courier in result.get("couriers", []):
+                if not courier.get("serviceable"):
+                    continue
+
+                row_idx = len(table_rows)
+                eta = courier.get("eta", "N/A")
+                ctype = courier.get("type", "surface")
+
+                all_serviceable.append(
+                    {
+                        "name": courier.get("name", "Unknown"),
+                        "aggregator": agg_name,
+                        "eta": eta,
+                        "type": ctype,
+                    }
+                )
+
+                table_rows.append(
+                    {
+                        "id": row_idx,
+                        "courier": courier.get("name", "Unknown"),
+                        "destination": f"{destination_pincode} - {agg_name.upper()}",
+                        "pickup": True,
+                        "reverse": False,
+                        "prepaid": True,
+                        "cod": ctype != "air",
+                        "ndd": "1" in str(eta) or ctype == "air",
+                        "zone": _zone_for_index(row_idx),
+                    }
+                )
+
+        return {
+            "serviceable_couriers": all_serviceable,
+            "table_rows": table_rows,
+        }
 
 @router.post("/check-serviceability")
 def check_serviceability_post(

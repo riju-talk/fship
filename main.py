@@ -13,9 +13,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(serviceability_router)
-
-
-@app.get("/health")
-def health() -> dict:
-    return {"status": "ok", "service": "serviceability-api"}
+app.include_router(serviceability_router, prefix="", tags=["Serviceability"])
