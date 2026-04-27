@@ -10,7 +10,7 @@ from aggregators.rapidshyp import common as rapidshyp_common
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(prefix="/api", tags=["Serviceability"])
 
 
 def get_user_ratecards(user_id: str) -> List[Dict[str, Any]]:
@@ -124,9 +124,22 @@ def check_serviceability_api(
             "table_rows": table_rows,
         }
 
+@router.post("/check-serviceability")
+def check_serviceability_post(
+    pickup_pincode: str = Query(..., min_length=6, max_length=6),
+    destination_pincode: str = Query(..., min_length=6, max_length=6),
+    user_id: str = Query("demo_user"),
+    cod: bool = Query(True),
+    order_value: float = Query(1000),
+    weight: float = Query(1.0),
+) -> Dict[str, Any]:
+    try:
+        return _build_response(pickup_pincode, destination_pincode, user_id, cod, order_value, weight)
+    except HTTPException:
+        raise
     except Exception as exc:
-        logger.error("Serviceability check failed: %s", str(exc))
+        logger.exception("Serviceability POST failed")
         raise HTTPException(
             status_code=500,
-            detail="Internal server error while checking serviceability.",
+            detail=f"Internal server error while checking serviceability: {str(exc)}",
         )

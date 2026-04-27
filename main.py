@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from serviceability_router import router as serviceability_router
 
-app = FastAPI(title="Serviceability API")
+app = FastAPI(title="Serviceability API", version="1.0.1")
 
 app.add_middleware(
     CORSMiddleware,
