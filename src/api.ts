@@ -41,8 +41,8 @@ export async function checkServiceability(params: {
     weight: String(params.weight ?? 1),
   })
 
-  const response = await fetch(`/api/check-serviceability?${query.toString()}`, {
-    method: 'POST',
+  const response = await fetch(`http://localhost:8000/api/check-serviceability?${query.toString()}`, {
+    method: 'GET',
   })
 
   if (!response.ok) {
@@ -50,10 +50,7 @@ export async function checkServiceability(params: {
   }
 
   const data = (await response.json()) as ServiceabilityResponse
-  if (Array.isArray(data.table_rows)) {
-    return data.table_rows
-  }
-
+  
   const serviceableCouriers = Array.isArray(data.serviceable_couriers)
     ? data.serviceable_couriers
     : []

@@ -84,14 +84,14 @@ export default function Dashboard() {
     setFilters(prev => ({ ...prev, [key]: value }))
   }, [])
 
-  const handleSearch = useCallback(async () => {
-    const pickup = filters.sourcePincode || '110001'
-    const destination = filters.destPincode || '400001'
+  const isValidPincode = (p) => /^\d{6}$/.test(p)
 
-    // Validate pincodes
+  const handleSearch = useCallback(async () => {
+    const pickup = filters.sourcePincode
+    const destination = filters.destPincode
+
     if (!isValidPincode(pickup) || !isValidPincode(destination)) {
-      console.error('Invalid pincode format. Please enter 6-digit pincodes.')
-      setResults([])
+      alert('Please enter valid 6-digit pincodes for both source and destination.')
       return
     }
 
@@ -120,11 +120,11 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#f3f5f8] text-[#1f2937]">
-      <header className="border-b border-[#e6eaf1] border-t-2 border-t-[#6878f6] bg-white">
-        <div className="mx-auto flex h-14 w-full max-w-[1240px] items-center justify-between px-6">
+      <header className="sticky top-0 z-50 border-b border-[#e6eaf1] bg-white">
+        <div className="flex h-14 w-full items-center justify-between px-6">
           <div className="flex items-center gap-9">
             <div className="text-[18px] font-semibold text-[#1f2a37]">
-              Fship
+              Pristine Logic
             </div>
 
             <nav className="hidden items-center gap-7 md:flex">

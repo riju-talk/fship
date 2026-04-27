@@ -3,53 +3,45 @@ export default function CourierResultCard({ courier }) {
   const isAir = courier.type?.toLowerCase() === "air";
 
   return (
-    <div style={{
-      border: "1px solid #e0e0e0",
-      borderRadius: "10px",
-      padding: "16px",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: "10px",
-      background: "#fff",
-      boxShadow: "0 1px 4px rgba(0,0,0,0.07)"
-    }}>
-      {/* Left: Courier name + aggregator badge */}
+    <div className="flex items-center justify-between rounded-xl border border-[#e5e7eb] bg-white p-4 shadow-sm transition-all hover:shadow-md">
+      {/* Left: Courier info */}
       <div>
-        <div style={{ fontWeight: 600, fontSize: "16px" }}>{courier.name}</div>
-        <div style={{ fontSize: "12px", color: "#888", marginTop: "4px" }}>
-          via {courier.aggregator}
-          {courier.courier_code && ` · #${courier.courier_code}`}
+        <div className="text-[15px] font-bold text-[#111827]">{courier.name}</div>
+        <div className="mt-1 flex items-center gap-2 text-[12px] text-[#6b7280]">
+          <span className="font-medium text-[#ef6a23]">via {courier.aggregator}</span>
+          {courier.courier_code && (
+            <>
+              <span className="h-1 w-1 rounded-full bg-[#d1d5db]" />
+              <span>#{courier.courier_code}</span>
+            </>
+          )}
         </div>
         {courier.cutoff_time && (
-          <div style={{ fontSize: "12px", color: "#e65c00", marginTop: "4px" }}>
-            ⏰ Order by {courier.cutoff_time}
+          <div className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold text-[#ea580c]">
+            <span role="img" aria-label="clock">⏰</span>
+            Order by {courier.cutoff_time}
           </div>
         )}
       </div>
 
-      {/* Right: ETA + type + freight */}
-      <div style={{ textAlign: "right" }}>
-        <div style={{
-          display: "inline-block",
-          padding: "3px 10px",
-          borderRadius: "12px",
-          fontSize: "12px",
-          fontWeight: 600,
-          background: isAir ? "#e8f4ff" : "#f0fdf4",
-          color: isAir ? "#1a73e8" : "#15803d",
-          marginBottom: "6px"
-        }}>
+      {/* Right: ETA & Type */}
+      <div className="text-right">
+        <div className={[
+          "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-tight",
+          isAir ? "bg-blue-50 text-blue-600" : "bg-emerald-50 text-emerald-600"
+        ].join(" ")}>
           {isAir ? "✈ Air" : "🚛 Surface"}
         </div>
+        
         {courier.eta && courier.eta !== "N/A" && (
-          <div style={{ fontSize: "13px", color: "#333" }}>
-            ETA: <strong>{courier.eta}</strong>
+          <div className="mt-2 text-[13px] font-medium text-[#111827]">
+            ETA: <span className="font-bold">{courier.eta}</span>
           </div>
         )}
+        
         {courier.total_freight != null && (
-          <div style={{ fontSize: "12px", color: "#555", marginTop: "4px" }}>
-            Est. ₹{courier.total_freight}
+          <div className="mt-1 text-[12px] font-bold text-[#059669]">
+            ₹{courier.total_freight}
           </div>
         )}
       </div>
