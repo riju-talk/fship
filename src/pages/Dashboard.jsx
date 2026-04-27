@@ -85,10 +85,17 @@ export default function Dashboard() {
   }, [])
 
   const handleSearch = useCallback(async () => {
-    setLoading(true)
-
     const pickup = filters.sourcePincode || '110001'
     const destination = filters.destPincode || '400001'
+
+    // Validate pincodes
+    if (!isValidPincode(pickup) || !isValidPincode(destination)) {
+      console.error('Invalid pincode format. Please enter 6-digit pincodes.')
+      setResults([])
+      return
+    }
+
+    setLoading(true)
 
     try {
       const rows = await checkServiceability({
