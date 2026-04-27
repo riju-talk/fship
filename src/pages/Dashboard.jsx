@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react'
 import SearchBar from '@/components/SearchBar'
 import ResultsTable from '@/components/ResultsTable'
 import { generateMockResults } from '@/constants/mockData'
+import { checkServiceability, isValidPincode } from '@/api/api'
 
 const DEFAULT_FILTERS = {
   shipmentType: 'forward',
@@ -85,36 +86,30 @@ export default function Dashboard() {
   }, [])
 
   const handleSearch = useCallback(async () => {
-    setLoading(true)
-
     const pickup = filters.sourcePincode || '110001'
     const destination = filters.destPincode || '400001'
 
+    // Validate pincodes
+    if (!isValidPincode(pickup) || !isValidPincode(destination)) {
+      console.error('Invalid pincode format. Please enter 6-digit pincodes.')
+      setResults([])
+      return
+    }
+
+    setLoading(true)
+
     try {
-      const params = new URLSearchParams({
+      const data = await checkServiceability({
         pickup_pincode: pickup,
         destination_pincode: destination,
         user_id: 'demo_user',
       })
 
-      const response = await fetch(`/api/check-serviceability?${params.toString()}`, {
-        method: 'POST',
-      })
-
-      if (!response.ok) {
-        throw new Error(`Serviceability API failed with ${response.status}`)
-      }
-
-      const data = await response.json()
-
-      if (Array.isArray(data.table_rows)) {
+      if (Array.isArray(data.table_rows) && data.table_rows.length > 0) {
         setResults(data.table_rows)
-      } else {
-        const serviceableCouriers = Array.isArray(data.serviceable_couriers)
-          ? data.serviceable_couriers
-          : []
+      } else if (Array.isArray(data.serviceable_couriers) && data.serviceable_couriers.length > 0) {
         const zones = ['A', 'B', 'C', 'D', 'E']
-        const mappedRows = serviceableCouriers.map((courier, idx) => ({
+        const mappedRows = data.serviceable_couriers.map((courier, idx) => ({
           id: idx,
           courier: courier.name,
           destination: `${destination} - ${courier.aggregator.toUpperCase()}`,
@@ -126,6 +121,8 @@ export default function Dashboard() {
           zone: zones[idx % zones.length],
         }))
         setResults(mappedRows)
+      } else {
+        setResults([])
       }
     } catch (error) {
       console.error('Serviceability API request failed, using fallback mock data:', error)

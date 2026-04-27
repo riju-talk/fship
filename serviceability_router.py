@@ -5,7 +5,6 @@ from fastapi import APIRouter, HTTPException, Query
 
 from aggregators.fship import common as fship_common
 from aggregators.rapidshyp import common as rapidshyp_common
-from aggregators.rapidshyp_new import common as rapidshyp_new_common
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,13 +28,7 @@ def get_user_ratecards(user_id: str) -> List[Dict[str, str]]:
             "courier_name": "RapidShyp Default",
             "aggregator": "rapidshyp",
             "api_key": "YOUR_RAPID_KEY",
-            "url": "https://api.rapidshyp.com/v1/serviceability",
-        },
-        {
-            "courier_name": "RapidShypNew Default",
-            "aggregator": "rapidshyp_new",
-            "api_key": "YOUR_NEW_KEY",
-            "url": "https://api.rapidshypnew.com/v1/serviceability",
+            "url": "https://api.rapidshyp.com/rapidshyp/apis/v1/serviceability_check",
         },
     ]
 
@@ -59,7 +52,6 @@ def check_serviceability_api(
         aggregators: Dict[str, List[Dict[str, str]]] = {
             "fship": [],
             "rapidshyp": [],
-            "rapidshyp_new": [],
         }
         for rc in ratecards:
             agg = rc.get("aggregator", "")
@@ -78,13 +70,6 @@ def check_serviceability_api(
                 )
             elif agg_name == "rapidshyp":
                 result = rapidshyp_common.check_serviceability(
-                    pickup_pincode,
-                    destination_pincode,
-                    api_key=creds[0].get("api_key", ""),
-                    url=creds[0].get("url", ""),
-                )
-            elif agg_name == "rapidshyp_new":
-                result = rapidshyp_new_common.check_serviceability(
                     pickup_pincode,
                     destination_pincode,
                     api_key=creds[0].get("api_key", ""),
