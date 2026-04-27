@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import SearchBar from '@/components/SearchBar'
 import ResultsTable from '@/components/ResultsTable'
-import { generateMockResults } from '@/constants/mockData'
+import { checkServiceability } from '@/api'
 
 const DEFAULT_FILTERS = {
   shipmentType: 'forward',
@@ -91,51 +91,15 @@ export default function Dashboard() {
     const destination = filters.destPincode || '400001'
 
     try {
-      const params = new URLSearchParams({
-        pickup_pincode: pickup,
-        destination_pincode: destination,
-        user_id: 'demo_user',
+      const rows = await checkServiceability({
+        pickupPincode: pickup,
+        destinationPincode: destination,
+        userId: 'demo_user',
       })
-
-      const response = await fetch(`/api/check-serviceability?${params.toString()}`, {
-        method: 'POST',
-      })
-
-      if (!response.ok) {
-        throw new Error(`Serviceability API failed with ${response.status}`)
-      }
-
-      const data = await response.json()
-
-      if (Array.isArray(data.table_rows)) {
-        setResults(data.table_rows)
-      } else {
-        const serviceableCouriers = Array.isArray(data.serviceable_couriers)
-          ? data.serviceable_couriers
-          : []
-        const zones = ['A', 'B', 'C', 'D', 'E']
-        const mappedRows = serviceableCouriers.map((courier, idx) => ({
-          id: idx,
-          courier: courier.name,
-          destination: `${destination} - ${courier.aggregator.toUpperCase()}`,
-          pickup: true,
-          reverse: courier.aggregator !== 'fship',
-          prepaid: true,
-          cod: courier.type !== 'air',
-          ndd: courier.type === 'air',
-          zone: zones[idx % zones.length],
-        }))
-        setResults(mappedRows)
-      }
+      setResults(rows)
     } catch (error) {
-      console.error('Serviceability API request failed, using fallback mock data:', error)
-      const fallbackRows = generateMockResults(
-        filters.shipmentType,
-        filters.expressType,
-        pickup,
-        destination,
-      )
-      setResults(fallbackRows)
+      console.error('Serviceability API request failed:', error)
+      setResults([])
     } finally {
       setLoading(false)
     }
