@@ -176,7 +176,7 @@
       }
     });
 
-    const response = await fetch(`/api/check-serviceability?${query.toString()}`, {
+    const response = await fetch(`http://127.0.0.1:8000/api/check-serviceability?${query.toString()}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
