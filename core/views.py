@@ -191,13 +191,13 @@ def _normalize_aggregator(value: str) -> Optional[str]:
 async def _resolve_warehouse_pincode(warehouse_id: str, user_id: str) -> Optional[str]:
     if not warehouse_id:
         return None
-    
+
     warehouse = await sync_to_async(
         lambda: Warehouse.objects.filter(user_id=user_id, warehouse_id=warehouse_id)
         .values("pincode")
         .first()
     )()
-    
+
     if not warehouse:
         return None
     return warehouse.get("pincode")
