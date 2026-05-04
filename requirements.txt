@@ -1,11 +1,1 @@
-fastapi
-uvicorn[standard]
-httpx
-sqlalchemy[asyncio]
-asyncpg
-pydantic
-pydantic-settings
-python-dotenv
-pytest
-pytest-asyncio
-aiosqlite
+django

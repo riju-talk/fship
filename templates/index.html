@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CourierCheck - Serviceability Dashboard</title>
+    <meta name="description" content="Check courier serviceability across pincodes. Compare pickup, reverse, prepaid, COD and NDD availability across all major logistics partners." />
+    <meta name="keywords" content="courier serviceability, pincode check, logistics dashboard, COD availability, shipping zones" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="CourierCheck - Serviceability Dashboard" />
+    <meta property="og:description" content="Check courier serviceability across pincodes instantly." />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1200&h=630&fit=crop" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CourierCheck - Serviceability Dashboard" />
+    <meta name="twitter:description" content="Check courier serviceability across pincodes instantly." />
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1200&h=630&fit=crop" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "system-ui", "sans-serif"],
+            },
+            colors: {
+              brand: {
+                50: "#fff4ed",
+                100: "#ffe8d5",
+                200: "#fecdaa",
+                300: "#fdac74",
+                400: "#fb8039",
+                500: "#f96015",
+                600: "#FF6A00",
+                700: "#c13d06",
+                800: "#9a320d",
+                900: "#7c2c0e",
+              },
+              surface: {
+                50: "#f8f9fc",
+                100: "#f1f3f9",
+                200: "#e8ebf4",
+                300: "#d5daea",
+              },
+            },
+            borderRadius: {
+              "2xl": "16px",
+              "3xl": "20px",
+            },
+            boxShadow: {
+              soft: "0 2px 15px -3px rgba(0,0,0,0.07), 0 10px 20px -2px rgba(0,0,0,0.04)",
+              card: "0 4px 24px -4px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)",
+              glow: "0 0 0 3px rgba(255,106,0,0.18)",
+              brand: "0 4px 14px rgba(255,106,0,0.35)",
+            },
+            animation: {
+              "fade-in": "fadeIn 0.4s ease-out both",
+              "slide-up": "slideUp 0.4s ease-out both",
+              skeleton: "skeleton 1.4s ease-in-out infinite",
+            },
+            keyframes: {
+              fadeIn: {
+                "0%": { opacity: "0" },
+                "100%": { opacity: "1" },
+              },
+              slideUp: {
+                "0%": { opacity: "0", transform: "translateY(16px)" },
+                "100%": { opacity: "1", transform: "translateY(0)" },
+              },
+              skeleton: {
+                "0%, 100%": { opacity: "1" },
+                "50%": { opacity: "0.4" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+  </head>
+  <body>
+    <div id="root">
+      <div class="min-h-screen bg-[#f3f5f8] text-[#1f2937]">
+        <header class="sticky top-0 z-50 border-b border-[#e6eaf1] bg-white">
+          <div class="flex h-14 w-full items-center justify-between px-6">
+            <div class="flex items-center gap-9">
+              <div class="text-[18px] font-semibold text-[#1f2a37]">
+                Fship
+              </div>
+
+              <nav class="hidden items-center gap-7 md:flex">
+                <button type="button" class="border-b-2 py-[18px] text-[12px] font-medium transition-colors duration-150 border-transparent text-[#7c8594] hover:text-[#4b5563]">Dashboard</button>
+                <button type="button" class="border-b-2 py-[18px] text-[12px] font-medium transition-colors duration-150 border-transparent text-[#7c8594] hover:text-[#4b5563]">Tracking</button>
+                <button type="button" class="border-b-2 py-[18px] text-[12px] font-medium transition-colors duration-150 border-[#ef6a23] text-[#ef6a23]">Serviceability</button>
+                <button type="button" class="border-b-2 py-[18px] text-[12px] font-medium transition-colors duration-150 border-transparent text-[#7c8594] hover:text-[#4b5563]">Analytics</button>
+              </nav>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button type="button" class="flex h-8 w-8 items-center justify-center rounded-full border border-transparent text-[#647083] transition-colors duration-150 hover:bg-[#f6f8fb]">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <path d="M7.5 2.1a2.9 2.9 0 00-2.9 2.9v1.9L3.3 9v1h8.4V9l-1.3-2.1V5a2.9 2.9 0 00-2.9-2.9z" stroke="currentColor" stroke-width="1.2" />
+                  <path d="M6 11.2a1.5 1.5 0 003 0" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+                </svg>
+              </button>
+              <button type="button" class="flex h-8 w-8 items-center justify-center rounded-full border border-transparent text-[#647083] transition-colors duration-150 hover:bg-[#f6f8fb]">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <path d="M6.2 1.8h2.6l.3 1.2a4.7 4.7 0 011 .4l1.1-.6 1.8 1.8-.6 1.1c.16.32.29.65.39 1l1.2.3v2.6l-1.2.3a4.8 4.8 0 01-.4 1l.6 1.1-1.8 1.8-1.1-.6a4.7 4.7 0 01-1 .4l-.3 1.2H6.2l-.3-1.2a4.7 4.7 0 01-1-.4l-1.1.6-1.8-1.8.6-1.1a4.8 4.8 0 01-.4-1L1 9.9V7.3l1.2-.3a4.7 4.7 0 01.4-1L2 4.9l1.8-1.8 1.1.6c.32-.16.65-.29 1-.39l.3-1.2z" stroke="currentColor" stroke-width="1" />
+                  <circle cx="7.5" cy="8" r="1.7" stroke="currentColor" stroke-width="1" />
+                </svg>
+              </button>
+              <button type="button" class="ml-1 flex h-7 w-7 items-center justify-center rounded-full bg-[#0f172a] text-[10px] font-semibold text-white">
+                <span>RJ</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main class="mx-auto w-full max-w-[1240px] px-6 py-6">
+          <section class="animate-fade-in">
+            <div class="mb-7">
+              <h1 class="mb-1 text-[38px] font-semibold leading-[1.08] text-[#111827] md:text-[42px]">Serviceability Checker</h1>
+              <p class="text-[15px] text-[#6b7280]">
+                Instantly verify courier availability, transit times, and service zones across your global network.
+              </p>
+            </div>
+
+            <div class="mb-7 grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <div class="rounded-[8px] border border-[#e6eaf1] bg-white px-4 py-4 md:px-5 md:py-5">
+                <div class="mb-3 text-[#ef6a23]">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <circle cx="5" cy="4" r="2" stroke="#ef6a23" stroke-width="1.4" />
+                    <path d="M1.5 11.5c0-1.85 1.55-3.25 3.5-3.25s3.5 1.4 3.5 3.25" stroke="#ef6a23" stroke-width="1.4" stroke-linecap="round" />
+                    <path d="M9.3 4.2h4.2M9.3 7h4.2" stroke="#ef6a23" stroke-width="1.4" stroke-linecap="round" />
+                  </svg>
+                </div>
+                <div id="active-couriers" class="text-[31px] font-semibold leading-none text-[#1f2937]">--</div>
+                <div class="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#8f97a6]">Active Couriers</div>
+              </div>
+              <div class="rounded-[8px] border border-[#e6eaf1] bg-white px-4 py-4 md:px-5 md:py-5">
+                <div class="mb-3 text-[#ef6a23]">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <path d="M7.5 13c2-2.15 3.4-4.23 3.4-6.1a3.4 3.4 0 10-6.8 0c0 1.87 1.4 3.95 3.4 6.1z" stroke="#ef6a23" stroke-width="1.4" />
+                    <circle cx="7.5" cy="6.6" r="1.25" fill="#ef6a23" />
+                  </svg>
+                </div>
+                <div id="pincodes-covered" class="text-[31px] font-semibold leading-none text-[#1f2937]">--</div>
+                <div class="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#8f97a6]">Pincodes Covered</div>
+              </div>
+              <div class="rounded-[8px] border border-[#e6eaf1] bg-white px-4 py-4 md:px-5 md:py-5">
+                <div class="mb-3 text-[#ef6a23]">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <rect x="1.5" y="3.4" width="12" height="8.2" rx="1.8" stroke="#ef6a23" stroke-width="1.4" />
+                    <circle cx="7.5" cy="7.5" r="1.5" stroke="#ef6a23" stroke-width="1.2" />
+                  </svg>
+                </div>
+                <div id="cod-available" class="text-[31px] font-semibold leading-none text-[#1f2937]">--</div>
+                <div class="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#8f97a6]">COD Available</div>
+              </div>
+              <div class="rounded-[8px] border border-[#e6eaf1] bg-white px-4 py-4 md:px-5 md:py-5">
+                <div class="mb-3 text-[#ef6a23]">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <path d="M8.8 1.6L3.9 8.1h3l-.7 5.3 4.9-6.5h-3l.7-5.3z" stroke="#ef6a23" stroke-width="1.3" stroke-linejoin="round" />
+                  </svg>
+                </div>
+                <div id="ndd-zones" class="text-[31px] font-semibold leading-none text-[#1f2937]">--</div>
+                <div class="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#8f97a6]">NDD Zones</div>
+              </div>
+            </div>
+
+            <div class="mb-4 rounded-[8px] border border-[#e5e9f0] bg-white p-4 md:p-5">
+              <div class="grid gap-3 md:grid-cols-[1.1fr_1fr_1.2fr_1fr_1fr_auto_auto] md:items-end">
+                <div>
+                  <label class="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8b94a3]">Select Type</label>
+                  <div class="relative">
+                    <select id="shipmentType" class="h-11 w-full rounded-md border border-[#e5e9f0] bg-[#f5f7fb] px-3 text-[13px] text-[#374151] placeholder:text-[#a1a9b5] transition-colors duration-150 focus:outline-none focus:border-[#d6dbe5] focus:bg-white cursor-pointer pr-9">
+                      <option value="forward">Forward Shipment</option>
+                      <option value="reverse">Reverse Shipment</option>
+                      <option value="exchange">Exchange Shipment</option>
+                    </select>
+                    <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#99a2b1]">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8b94a3]">Express Type</label>
+                  <div class="relative">
+                    <select id="expressType" class="h-11 w-full rounded-md border border-[#e5e9f0] bg-[#f5f7fb] px-3 text-[13px] text-[#374151] placeholder:text-[#a1a9b5] transition-colors duration-150 focus:outline-none focus:border-[#d6dbe5] focus:bg-white cursor-pointer pr-9">
+                      <option value="air">Air Express</option>
+                      <option value="surface">Surface Express</option>
+                      <option value="priority">Priority Express</option>
+                    </select>
+                    <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#99a2b1]">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8b94a3]">Warehouse / Hub</label>
+                  <div class="relative">
+                    <select id="warehouseSelect" class="h-11 w-full rounded-md border border-[#e5e9f0] bg-[#f5f7fb] px-3 text-[13px] text-[#374151] placeholder:text-[#a1a9b5] transition-colors duration-150 focus:outline-none focus:border-[#d6dbe5] focus:bg-white cursor-pointer pr-9">
+                      <option value="">Select warehouse (optional)</option>
+                    </select>
+                    <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#99a2b1]">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8b94a3]">Pickup Pincode</label>
+                  <input id="sourcePincode" type="text" inputmode="numeric" maxlength="6" placeholder="e.g. 110001" class="h-11 w-full rounded-md border border-[#e5e9f0] bg-[#f5f7fb] px-3 text-[13px] text-[#374151] placeholder:text-[#a1a9b5] transition-colors duration-150 focus:outline-none focus:border-[#d6dbe5] focus:bg-white" />
+                </div>
+
+                <div>
+                  <label class="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8b94a3]">Destination Pincode</label>
+                  <input id="destPincode" type="text" inputmode="numeric" maxlength="6" placeholder="e.g. 400001" class="h-11 w-full rounded-md border border-[#e5e9f0] bg-[#f5f7fb] px-3 text-[13px] text-[#374151] placeholder:text-[#a1a9b5] transition-colors duration-150 focus:outline-none focus:border-[#d6dbe5] focus:bg-white" />
+                </div>
+
+                <div class="md:pt-[17px]">
+                  <button id="searchBtn" type="button" class="h-11 rounded-md bg-[#ed6a23] px-10 text-[12px] font-semibold uppercase tracking-[0.08em] text-white transition-colors duration-150 hover:bg-[#de5e1b] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f09764] focus-visible:ring-offset-2">
+                    Search
+                  </button>
+                </div>
+
+                <div class="md:pt-[17px]">
+                  <button id="resetBtn" type="button" class="flex h-11 w-11 items-center justify-center rounded-md border border-[#e5e9f0] bg-white text-[#7e8796] transition-colors duration-150 hover:bg-[#f7f9fc] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#dce2ec] focus-visible:ring-offset-2" aria-label="Reset filters">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M3 8a5 5 0 1 0 2-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                      <path d="M3 4v3h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="overflow-hidden rounded-[8px] border border-[#e6eaf1] bg-white">
+              <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                  <thead>
+                    <tr>
+                      <th class="bg-[#f6f8fb] px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8b94a3] border-b border-[#e7ebf2]">Courier</th>
+                      <th class="bg-[#f6f8fb] px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8b94a3] border-b border-[#e7ebf2]">Destination</th>
+                      <th class="bg-[#f6f8fb] px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8b94a3] border-b border-[#e7ebf2]">Pickup</th>
+                      <th class="bg-[#f6f8fb] px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8b94a3] border-b border-[#e7ebf2]">Reverse</th>
+                      <th class="bg-[#f6f8fb] px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8b94a3] border-b border-[#e7ebf2]">Prepaid</th>
+                      <th class="bg-[#f6f8fb] px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8b94a3] border-b border-[#e7ebf2]">COD</th>
+                      <th class="bg-[#f6f8fb] px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8b94a3] border-b border-[#e7ebf2]">NDD</th>
+                      <th class="bg-[#f6f8fb] px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8b94a3] border-b border-[#e7ebf2]">Zone</th>
+                    </tr>
+                  </thead>
+                  <tbody id="results-body" class="divide-y divide-[#edf1f6]"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="mt-7 grid gap-4 lg:grid-cols-[2fr_1fr]">
+              <div class="overflow-hidden rounded-[8px] border border-[#e6eaf1] bg-white">
+                <div class="grid h-full min-h-[184px] md:grid-cols-[2.1fr_1fr]">
+                  <div class="bg-[#ef640f] p-8 text-white">
+                    <h2 class="mb-3 text-[34px] font-semibold leading-tight">Enterprise Routing Engine</h2>
+                    <p class="max-w-[520px] text-[16px] leading-[1.55] text-[#fff3ea]">
+                      Our proprietary logic automatically selects the optimal courier based on cost, speed, and reliability history for every single pincode.
+                    </p>
+                    <button type="button" class="mt-6 inline-flex rounded-[4px] bg-white px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.09em] text-[#ea650f]">
+                      Learn More
+                    </button>
+                  </div>
+                  <div class="relative hidden bg-cover bg-center md:block" style="background-image: linear-gradient(0deg, rgba(148,62,9,0.35), rgba(148,62,9,0.35)), url(https://images.unsplash.com/photo-1489516408517-0c0a15662682?auto=format&fit=crop&w=900&q=80);">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#ef640f]/55 to-transparent"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-[8px] border border-[#e6eaf1] bg-white p-6">
+                <div class="mb-6 flex h-9 w-9 items-center justify-center rounded-md bg-[#fff3ea] text-[#ef6a23]">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 2l1.45 1.54 2.15-.15.84 1.99 1.9 1-.84 1.99.84 1.99-1.9 1-.84 1.99-2.15-.15L8 14l-1.45-1.54-2.15.15-.84-1.99-1.9-1 .84-1.99-.84-1.99 1.9-1 .84-1.99 2.15.15L8 2z" stroke="currentColor" stroke-width="1.2" />
+                    <circle cx="8" cy="8" r="2.2" stroke="currentColor" stroke-width="1.2" />
+                  </svg>
+                </div>
+                <h3 class="mb-2 text-[26px] font-semibold leading-tight text-[#111827]">Accuracy Guaranteed</h3>
+                <p class="text-[15px] leading-[1.6] text-[#6b7280]">
+                  Data updated every 15 minutes across all partner carriers to ensure zero shipment failures.
+                </p>
+                <div class="my-5 h-px bg-[#eceff4]"></div>
+                <button type="button" class="inline-flex items-center gap-2 text-[14px] font-medium text-[#ef6a23]">
+                  View API Documentation
+                  <span aria-hidden="true">-></span>
+                </button>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script src="{% static 'js/app.js' %}"></script>
+  </body>
+</html>
