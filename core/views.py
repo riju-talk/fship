@@ -4,9 +4,9 @@ import re
 from typing import Dict, List, Optional, Tuple
 
 from asgiref.sync import sync_to_async
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_http_methods
 
 from .models import Courier, Warehouse
 
@@ -26,24 +26,46 @@ def index(request):
     return render(request, "index.html")
 
 
-@require_GET
+@require_http_methods(["GET", "OPTIONS"])
 def health(request):
+    if request.method == "OPTIONS":
+        response = HttpResponse()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type"
+        return response
     return JsonResponse({"status": "ok"})
 
 
-@require_GET
+@require_http_methods(["GET", "OPTIONS"])
 def get_warehouses(request):
+    if request.method == "OPTIONS":
+        response = HttpResponse()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type"
+        return response
+    
     user_id = _get_user_id(request)
     warehouses = list(
         Warehouse.objects.filter(user_id=user_id)
         .values("warehouse_id", "name", "pincode", "city")
         .order_by("name")
     )
-    return JsonResponse({"warehouses": warehouses})
+    response = JsonResponse({"warehouses": warehouses})
+    response["Access-Control-Allow-Origin"] = "*"
+    return response
 
 
-@require_GET
+@require_http_methods(["GET", "OPTIONS"])
 async def check_serviceability(request):
+    if request.method == "OPTIONS":
+        response = HttpResponse()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type"
+        return response
+    
     user_id = _get_user_id(request)
     pickup = request.GET.get("pickup_pincode", "").strip()
     destination = request.GET.get("destination_pincode", "").strip()
@@ -52,28 +74,34 @@ async def check_serviceability(request):
     if warehouse_id:
         pickup = await _resolve_warehouse_pincode(warehouse_id, user_id)
         if not pickup:
-            return JsonResponse(
+            response = JsonResponse(
                 {"serviceable_couriers": [], "error": "Invalid warehouse_id"},
                 status=422,
             )
+            response["Access-Control-Allow-Origin"] = "*"
+            return response
 
     if not pickup:
-        return JsonResponse(
+        response = JsonResponse(
             {"detail": "Either pickup_pincode or warehouse_id must be provided"},
             status=422,
         )
+        response["Access-Control-Allow-Origin"] = "*"
+        return response
 
     if not _is_valid_pincode(pickup) or not _is_valid_pincode(destination):
-        return JsonResponse(
+        response = JsonResponse(
             {"detail": "Pincodes must be 6 digits"},
             status=422,
         )
+        response["Access-Control-Allow-Origin"] = "*"
+        return response
 
     ratecards = await sync_to_async(list)(
         Courier.objects.filter(user_id=user_id)
     )
     if not ratecards:
-        return JsonResponse(
+        response = JsonResponse(
             {
                 "serviceable_couriers": [],
                 "pickup_pincode": pickup,
@@ -81,6 +109,8 @@ async def check_serviceability(request):
                 "error": "No rate cards configured for this user",
             }
         )
+        response["Access-Control-Allow-Origin"] = "*"
+        return response
 
     aggregator_couriers, ratecard_map = _build_ratecard_map(ratecards)
     results = await _fetch_from_aggregators(pickup, destination, aggregator_couriers)
@@ -123,17 +153,26 @@ async def check_serviceability(request):
                 }
             )
 
-    return JsonResponse(
+    response = JsonResponse(
         {
             "serviceable_couriers": serviceable,
             "pickup_pincode": pickup,
             "destination_pincode": destination,
         }
     )
+    response["Access-Control-Allow-Origin"] = "*"
+    return response
 
 
-@require_GET
+@require_http_methods(["GET", "OPTIONS"])
 def dashboard_data(request):
+    if request.method == "OPTIONS":
+        response = HttpResponse()
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type"
+        return response
+    
     user_id = _get_user_id(request)
     active_couriers = (
         Courier.objects.filter(user_id=user_id)
@@ -161,7 +200,7 @@ def dashboard_data(request):
         .count()
     )
 
-    return JsonResponse(
+    response = JsonResponse(
         {
             "active_couriers": active_couriers,
             "pincodes_covered": pincodes_covered,
@@ -169,6 +208,8 @@ def dashboard_data(request):
             "ndd_zones": ndd_zones,
         }
     )
+    response["Access-Control-Allow-Origin"] = "*"
+    return response
 
 
 def _get_user_id(request) -> str:
