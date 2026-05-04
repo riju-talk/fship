@@ -1,5 +1,26 @@
-/node_modules
-/.venv
-.env
+```gitignore
+# Python cache
+__pycache__/
 *.pyc
-/dist
+*.pyo
+*.pyd
+
+# Django specific
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.env
+*.env
+*.env.*
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+.DS_Store
+Thumbs.db
+```

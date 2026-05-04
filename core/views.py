@@ -3,6 +3,7 @@ import logging
 import re
 from typing import Dict, List, Optional, Tuple
 
+from asgiref.sync import sync_to_async
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
@@ -49,7 +50,7 @@ async def check_serviceability(request):
     warehouse_id = request.GET.get("warehouse_id", "").strip()
 
     if warehouse_id:
-        pickup = _resolve_warehouse_pincode(warehouse_id, user_id)
+        pickup = await _resolve_warehouse_pincode(warehouse_id, user_id)
         if not pickup:
             return JsonResponse(
                 {"serviceable_couriers": [], "error": "Invalid warehouse_id"},
@@ -68,7 +69,9 @@ async def check_serviceability(request):
             status=422,
         )
 
-    ratecards = list(Courier.objects.filter(user_id=user_id))
+    ratecards = await sync_to_async(list)(
+        Courier.objects.filter(user_id=user_id)
+    )
     if not ratecards:
         return JsonResponse(
             {
@@ -185,14 +188,16 @@ def _normalize_aggregator(value: str) -> Optional[str]:
     return AGGREGATOR_ALIASES.get(normalized)
 
 
-def _resolve_warehouse_pincode(warehouse_id: str, user_id: str) -> Optional[str]:
+async def _resolve_warehouse_pincode(warehouse_id: str, user_id: str) -> Optional[str]:
     if not warehouse_id:
         return None
-    warehouse = (
-        Warehouse.objects.filter(user_id=user_id, warehouse_id=warehouse_id)
+    
+    warehouse = await sync_to_async(
+        lambda: Warehouse.objects.filter(user_id=user_id, warehouse_id=warehouse_id)
         .values("pincode")
         .first()
-    )
+    )()
+    
     if not warehouse:
         return None
     return warehouse.get("pincode")
